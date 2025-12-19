@@ -1,42 +1,46 @@
 <?php
 // config/establecer-sesion.php
 
-// PUNTOS 2 y 6: Seguridad de cookies y expiración
+// Configura los parámetros de seguridad de la cookie de sesión (antes de iniciarla)
 session_set_cookie_params([
-    'lifetime' => 0,        // La cookie dura hasta que se cierra el navegador
-    'path' => '/',
-    'domain' => '',         // Tu dominio (localhost o el que sea)
-    'secure' => true,       // Pon false si estás en localhost SIN https
-    'httponly' => true,     // Inaccesible para JS
-    'samesite' => 'Strict', // Protección CSRF extra
+    'lifetime' => 0,        // La cookie expira al cerrar el navegador
+    'path' => '/',          // Disponible en todo el sitio
+    'domain' => '',         // Dominio actual (localhost)
+    'secure' => true,       // Solo se envía por HTTPS (false si usas http://localhost)
+    'httponly' => true,     // No accesible vía JavaScript (protege contra XSS)
+    'samesite' => 'Strict', // Solo se envía en peticiones del mismo sitio (protege contra CSRF)
 ]);
 
-session_start();
+session_start(); // Inicia o reanuda la sesión existente
 
-// --- PUNTO 7: Tiempo límite absoluto de sesión (2 horas) ---
-// Esto asegura que la sesión muera a las 2 horas aunque el usuario siga activo
-$limite_absoluto = 7200; // 2 horas en segundos
+// Define el tiempo máximo absoluto de vida de la sesión (independiente de la actividad)
+$limite_absoluto = 7200; // 7200 segundos equivalen a 2 horas
 
+// Verifica si la sesión existe y si ha superado el tiempo límite desde su creación
 if (isset($_SESSION['created_at']) && (time() - $_SESSION['created_at'] > $limite_absoluto)) {
-    session_unset();
-    session_destroy();
-    // Redirigimos con un mensaje de timeout
+    session_unset();    // Limpia las variables de sesión
+    session_destroy();  // Destruye la sesión en el servidor
+    // Redirige al login con un parámetro de timeout
     header("Location: index.php?action=login&timeout=1");
-    exit();
+    exit(); // Detiene la ejecución del script
 }
 
-// Si es una sesión nueva, marcamos cuándo se creó
+// Si es la primera vez que se crea la sesión, guardamos la marca de tiempo
 if (!isset($_SESSION['created_at'])) {
-    $_SESSION['created_at'] = time();
+    $_SESSION['created_at'] = time(); // Guarda el momento actual
 }
 
-// --- PUNTO 7: Regeneración periódica (Anti-Fixation) ---
-$regenerate_interval = 300; // 5 minutos
+// Intervalo para rotar el ID de sesión (seguridad contra fijación de sesión)
+$regenerate_interval = 300; // 5 minutos en segundos
+
+// Inicializa la marca de tiempo de regeneración si no existe
 if (!isset($_SESSION['last_regeneration'])) {
     $_SESSION['last_regeneration'] = time();
 }
+
+// Si ha pasado el tiempo de intervalo, regeneramos el ID
 if (time() - $_SESSION['last_regeneration'] >= $regenerate_interval) {
-    session_regenerate_id(true); // true borra la sesión antigua
-    $_SESSION['last_regeneration'] = time();
+    session_regenerate_id(true); // Genera nuevo ID y borra el archivo de sesión viejo
+    $_SESSION['last_regeneration'] = time(); // Actualiza el contador
 }
 ?>

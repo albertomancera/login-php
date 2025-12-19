@@ -2,27 +2,27 @@
 // config/Database.php
 class Database
 {
-    private $host = 'localhost';
-    private $db_name = 'login-php'; // Asegúrate de que este nombre sea exacto al de phpMyAdmin
-    private $username = 'root';
-    private $password = ''; // En XAMPP suele estar vacía
-    private $port = '3307'; // <--- AQUÍ ES DONDE FORZAMOS EL PUERTO DE XAMPP
+    private $host = 'localhost'; // Define la dirección del servidor de base de datos (local)
+    private $db_name = 'login-php'; // Define el nombre de la base de datos a la que conectar
+    private $username = 'root'; // Define el nombre de usuario para acceder a la base de datos
+    private $password = ''; // Define la contraseña del usuario (vacía por defecto en XAMPP)
+    private $port = '3307'; // Define el puerto específico de MySQL (útil si no usas el 3306)
 
-    public $PDO;
+    public $PDO; // Variable pública que almacenará el objeto de conexión activo
 
     public function getConnection()
     {
-        $this->PDO = null;
+        $this->PDO = null; // Inicializa la conexión como nula antes de intentar conectar
         try {
-            // Fíjate que añadimos ";port=" . $this->port a la cadena de conexión
+            // Construye la cadena de conexión (DSN) con host, puerto, nombre de BD y codificación
             $dsn = "mysql:host=" . $this->host . ";port=" . $this->port . ";dbname=" . $this->db_name . ";charset=utf8";
             
-            $this->PDO = new PDO($dsn, $this->username, $this->password);
-            $this->PDO->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $this->PDO = new PDO($dsn, $this->username, $this->password); // Crea la instancia de PDO intentando conectar
+            $this->PDO->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION); // Configura PDO para lanzar excepciones si hay errores
             
         } catch (PDOException $exception) {
-            echo "Error de conexión: " . $exception->getMessage();
+            echo "Error de conexión: " . $exception->getMessage(); // Captura y muestra el mensaje si falla la conexión
         }
-        return $this->PDO;
+        return $this->PDO; // Retorna el objeto de conexión (o null si falló)
     }
 }
