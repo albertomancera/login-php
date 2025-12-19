@@ -86,9 +86,24 @@ class AuthController
 
     public function logout()
     {
-        session_unset();
+        // 1. Vaciar variables de sesión
+        $_SESSION = array();
+
+        // 2. PUNTO 4: Borrar la cookie del navegador explícitamente
+        // Se debe usar los mismos parámetros con los que se creó
+        if (ini_get("session.use_cookies")) {
+            $params = session_get_cookie_params();
+            setcookie(session_name(), '', time() - 42000,
+                $params["path"], $params["domain"],
+                $params["secure"], $params["httponly"]
+            );
+        }
+
+        // 3. Destruir la sesión en el servidor
         session_destroy();
+
         header('Location: index.php?action=login');
         exit();
     }
 }
+?>

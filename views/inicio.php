@@ -1,5 +1,11 @@
 <?php
-// views/inicio.php
+    session_start();
+
+    if (!isset($_SESSION['idusuario'])) {
+        // Lo mandamos de vuelta al login (ajusta la ruta si tu login está en otro lado)
+        header("Location: ../index.php"); 
+        exit(); // Detenemos la ejecución del script
+    }
 ?>
 <!DOCTYPE html>
 <html lang="es">
